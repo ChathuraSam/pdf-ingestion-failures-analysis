@@ -54,17 +54,8 @@ def filter_failed_items(data):
     with open('failed_items.txt', 'w') as file:
         for item in failed_items:
             file.write(f"{item['Name']}\n")
-
-def main():
-    # stage = 'prod'
-    # bucket_name = f'etext-{stage}-ereader-ingest'
-    # sub_folder = 'incoming/epub/wiley.com'
-    
-    raw_data = read_file('raw_data.txt')
-    write_file('data.json', raw_data)
-    # print(raw_data)
-        
-    
+            
+def remove_manual_ingestions(raw_data):
     # Create a new list to store the filtered data
     filtered_data = raw_data
     
@@ -88,6 +79,18 @@ def main():
     
     # Write the filtered data to the JSON file
     write_file('filtered_data.json', filtered_data)
+
+def main():
+    # stage = 'prod'
+    # bucket_name = f'etext-{stage}-ereader-ingest'
+    # sub_folder = 'incoming/epub/wiley.com'
+    
+    raw_data = read_file('raw_data.txt')
+    write_file('data.json', raw_data)
+    # print(raw_data)
+        
+    remove_manual_ingestions(raw_data)
+    
     
     
     # read the data.json file and get the keys
