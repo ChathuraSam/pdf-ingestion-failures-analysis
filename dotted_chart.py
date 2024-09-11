@@ -10,7 +10,7 @@ def duration_to_seconds(duration):
     return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000
 
 # Load the JSON data from the file
-with open('data.json', 'r') as file:
+with open('filtered_data.json', 'r') as file:
     data = json.load(file)
 
 # Convert the data into a DataFrame
@@ -19,16 +19,19 @@ df = pd.DataFrame(data)
 # Convert the 'Duration' field into seconds
 df['Duration in Seconds'] = df['Duration'].apply(duration_to_seconds)
 
-# Create a pivot table for the heatmap
-# Group by 'Status' and aggregate the average duration
-heatmap_data = df.pivot_table(index='Status', values='Duration in Seconds', aggfunc='median')
+# Plot failed statuses in red
+failed = df[df['Status'] == 'Failed']
+plt.scatter(failed['Duration in Seconds'], failed['Status'], color='red', label='Failed')
 
-# Plot the heatmap
-plt.figure(figsize=(8, 6))
-sns.heatmap(heatmap_data, cmap="coolwarm", annot=True, fmt=".2f", cbar_kws={'label': 'Average Duration (seconds)'})
+# Plot succeeded statuses in green
+succeeded = df[df['Status'] == 'Succeeded']
+plt.scatter(succeeded['Duration in Seconds'], succeeded['Status'], color='green', label='Succeeded')
 
 # Customize the plot
-plt.title('Heatmap of Average Duration by Status (Succeeded vs. Failed)')
-plt.xlabel('Status')
-plt.ylabel('Duration (seconds)')
+plt.title('Scatter Plot of Duration vs Status (Succeeded vs Failed)')
+plt.xlabel('Duration (seconds)')
+plt.ylabel('Status')
+plt.legend()
+
+# Show the plot
 plt.show()

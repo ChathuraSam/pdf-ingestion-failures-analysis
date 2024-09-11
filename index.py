@@ -54,6 +54,22 @@ def filter_failed_items(data):
     with open('failed_items.txt', 'w') as file:
         for item in failed_items:
             file.write(f"{item['Name']}\n")
+            
+            
+def check_failed_and_succeeded_item_duration(data):
+    time_to_check = 3.3 * 60 # in minutesa
+    success_items_greater_than_3_minutes = []
+    failed_items_less_than_3_minutes = []
+    for item in data:
+        item_duration = item.get('Duration')
+        if(item_duration):
+            item_duration = item_duration.split(':')
+            item_duration = int(item_duration[1]) * 60 + int(item_duration[2].split('.')[0])
+            if(item_duration <= time_to_check and item['Status'] == 'Failed'):
+                failed_items_less_than_3_minutes.append(item)
+            if(item_duration > time_to_check and item['Status'] == 'Succeeded'):
+                success_items_greater_than_3_minutes.append(item)
+    return success_items_greater_than_3_minutes, failed_items_less_than_3_minutes
 
 def main():
     # stage = 'prod'
@@ -66,7 +82,7 @@ def main():
         
     
     # Create a new list to store the filtered data
-    filtered_data = raw_data
+    filtered_data = raw_data.copy()
     
     # Iterate over the raw data and filter out the items
     for item1 in raw_data:
@@ -80,7 +96,7 @@ def main():
                 item2_uuid = f"{item1['Name'].split('-')[0]}-{item2['Name'].split('-')[1]}-{item2['Name'].split('-')[2]}-{item2['Name'].split('-')[3]}-{item2['Name'].split('-')[4]}-{item2['Name'].split('-')[5]}"
                 if item2_isbn == item1_isbn and item2['Status'] == 'Failed':
                     failed_count += 1
-                if failed_count >= 2:
+                if failed_count >= 3:
                     is_manual_ingestion = True
                     break
             if is_manual_ingestion:
@@ -89,6 +105,10 @@ def main():
     # Write the filtered data to the JSON file
     write_file('filtered_data.json', filtered_data)
     
+    success_items_greater_than_3_minutes, failed_items_less_than_3_minutes = check_failed_and_succeeded_item_duration(filtered_data)
+    
+    # print formatted data to the console as json
+    print(json.dumps(success_items_greater_than_3_minutes, indent=4))
     
     # read the data.json file and get the keys
     
